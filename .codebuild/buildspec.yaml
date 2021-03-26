@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "start the build"
+  pre_build:
+    commands:
+      - echo "prebuild"
+  build:
+    commands:
+      - echo $CODEBUILD_SRC_DIR
+      - cd $CODEBUILD_SRC_DIR && ls -l
+      - cd $CODEBUILD_SRC_DIR && aws cloudformation package --template s3.yaml --s3-bucket test-artifacts-us-east-1-dev --output-template s3-export.json
+
+artifacts:
+  secondary-artifacts:
+    SourceFoundationArtifactOut:
+      base-directory: $CODEBUILD_SRC_DIR
+      discard-paths: yes
+      files:
+          - s3-export.json

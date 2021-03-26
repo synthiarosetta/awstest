@@ -1,9 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Parameters:
-  Stage:
-    Type: String
-    
 Resources:
 
   retailRouterEventBucket:
@@ -13,7 +9,6 @@ Resources:
             Fn::Join:
                   - ""
                   - - "retail-router-events-"
-                    - !Ref Stage
                     - "-"
                     - !Ref AWS::AccountId
                     - "-"
@@ -37,7 +32,6 @@ Resources:
             Fn::Join:
                   - ""
                   - - "retail-telemetry-"
-                    - !Ref Stage
                     - "-"
                     - !Ref AWS::AccountId
                     - "-"

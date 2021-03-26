@@ -17,9 +17,7 @@ phases:
       - echo "postbuild"
 
 artifacts:
-  secondary-artifacts:
-    SourceFoundationArtifactOut:
-      base-directory: $CODEBUILD_SRC_DIR
-      discard-paths: yes
-      files:
-          - s3-export.json
+  base-directory: $CODEBUILD_SRC_DIR
+  discard-paths: yes
+  files:
+    - s3-export.json

@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Stage:
+    Type: String
+    
+Resources:
+
+  retailRouterEventBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName:
+            Fn::Join:
+                  - ""
+                  - - "retail-router-events-"
+                    - !Ref Stage
+                    - "-"
+                    - !Ref AWS::AccountId
+                    - "-"
+                    - !Ref AWS::Region
+      AccessControl: Private
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+            AllowedOrigins:
+              - '*'
+      VersioningConfiguration:
+        Status: Suspended
+ 
+  retailTelemetryBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName:
+            Fn::Join:
+                  - ""
+                  - - "retail-telemetry-"
+                    - !Ref Stage
+                    - "-"
+                    - !Ref AWS::AccountId
+                    - "-"
+                    - !Ref AWS::Region
+      AccessControl: Private
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+            AllowedOrigins:
+              - '*'
+      VersioningConfiguration:
+        Status: Suspended
+ 
+
+Outputs:
+
+ RetailRouterEventBucketARN:
+    Description: 'ARN of the bucket'
+    Value: !GetAtt 
+            - retailRouterEventBucket
+            - Arn
+    Export:
+      Name: RetailRouterEventBucketARN
+  
+ RetailRouterEventBucketName:
+    Description: 'Name of the bucket'
+    Value: !Ref retailRouterEventBucket
+    Export:
+      Name: RetailRouterEventBucketName
+ 
+ RetailTelemetryBucketARN:
+    Description: 'ARN of the bucket'
+    Value: !GetAtt 
+            - retailTelemetryBucket
+            - Arn
+    Export:
+      Name: RetailTelemetryBucketARN
+  
+ RetailTelemetryBucketName:
+    Description: 'Name of the bucket'
+    Value: !Ref retailTelemetryBucket
+    Export:
+      Name: RetailTelemetryBucketName

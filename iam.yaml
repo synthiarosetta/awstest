@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "IAM Roles Stack"
+Parameters:
+  Stage:
+    Type: String
+Resources:
+
+#1 Firehose delivery role
+    retailFHStreamRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Sid: ''
+              Effect: Allow
+              Principal:
+                Service: firehose.amazonaws.com
+              Action: 'sts:AssumeRole'
+              Condition:
+                StringEquals:
+                  'sts:ExternalId': !Ref 'AWS::AccountId'
+        RoleName: !Sub retail_firehose_delivery_role_${Stage}
+
+    retailFHDeliveryPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyName: firehose_delivery_policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Sid: ''
+              Effect: Allow
+              Action:
+                - glue:GetTableVersions
+              Resource: "*"
+            - Sid: ''
+              Effect: Allow
+              Action:
+                - s3:AbortMultipartUpload
+                - s3:GetBucketLocation
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:ListBucketMultipartUploads
+                - s3:PutObject
+              Resource:
+                - Fn::ImportValue: !Sub 'RetailRouterEventBucketARN'
+                - Fn::Join:
+                    - ""
+                    - - Fn::ImportValue: !Sub 'RetailRouterEventBucketARN'
+                      - "/*"
+                - Fn::ImportValue: !Sub 'RetailTelemetryBucketARN'
+                - Fn::Join:
+                    - ""
+                    - - Fn::ImportValue: !Sub 'RetailTelemetryBucketARN'
+                      - "/*"
+                - arn:aws:s3:::%FIREHOSE_BUCKET_NAME%
+                - arn:aws:s3:::%FIREHOSE_BUCKET_NAME%/*
+            - Sid: ''
+              Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:GetFunctionConfiguration
+              Resource:
+                - Fn::Join:
+                    - ""
+                    - - "arn:aws:lambda:"
+                      - !Ref AWS::Region
+                      - ":"
+                      - !Ref AWS::AccountId
+                      - ":function:%FIREHOSE_DEFAULT_FUNCTION%:%FIREHOSE_DEFAULT_VERSION%"
+            - Sid: ''
+              Effect: Allow
+              Action:
+                - logs:PutLogEvents
+              Resource: "*"
+            - Sid: ''
+              Effect: Allow
+              Action:
+                - kinesis:DescribeStream
+                - kinesis:GetShardIterator
+                - kinesis:GetRecords
+              Resource: 
+                - Fn::Join:
+                    - ""
+                    - - "arn:aws:kinesis:"
+                      - !Ref AWS::Region
+                      - ":"
+                      - !Ref AWS::AccountId
+                      - ":stream/%FIREHOSE_STREAM_NAME%"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource:
+                - Fn::Join:
+                    - ""
+                    - - "arn:aws:kinesis:"
+                      - !Ref AWS::Region
+                      - ":"
+                      - !Ref AWS::AccountId
+                      - ":key/%SSE_KEY_ID%"
+              Condition:
+                StringEquals:
+                  kms:ViaService: kinesis.%Region_NAME%.amazonaws.com
+                StringLike:
+                  kms:EncryptionContext:aws:kinesis:arn: 
+                      - Fn::Join:
+                          - ""
+                          - - "arn:aws:kinesis:%Region_NAME%:"
+                            - !Ref AWS::AccountId 
+                            - ":stream/%FIREHOSE_STREAM_NAME%"
+
+        Roles:
+          - !Ref retailFHStreamRole
+
+Outputs:
+
+  RetailFHStreamRoleARN:
+    Description: 'Firehose stream Role ARN'
+    Value: !GetAtt 
+            - retailFHStreamRole
+            - Arn
+    Export:
+      Name: RetailFHStreamRoleARN
+

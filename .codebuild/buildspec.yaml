@@ -12,6 +12,7 @@ phases:
       - echo $CODEBUILD_SRC_DIR
       - cd $CODEBUILD_SRC_DIR && ls -l
       - cd $CODEBUILD_SRC_DIR && aws cloudformation package --template s3.yaml --s3-bucket retail.serverless.deploys.841332117967.us-east-1 --output-template s3-export.json
+      - cd $CODEBUILD_SRC_DIR && aws cloudformation deploy --template-file $CODEBUILD_SRC_DIR/s3-export.json --stack-name S3DeployStack
 
 artifacts:
   secondary-artifacts:

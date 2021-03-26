@@ -1,5 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: "S3 Stack"
+
+Parameters:
+  Stage:
+    Type: String
     
 Resources:
 
